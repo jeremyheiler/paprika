@@ -1,4 +1,4 @@
-(defproject paprika "0.1.0-SNAPSHOT"
+(defproject com.literallysoftware/paprika "0.0.1"
   :description "A Clojure library for the App.net API."
   :url "https://github.com/jeremyheiler/paprika"
   :license {:name "Eclipse Public License"
