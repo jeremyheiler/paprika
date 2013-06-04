@@ -5,7 +5,6 @@
 (def authenticate-uri "https://account.app.net/oauth/authenticate")
 (def access-token-uri "https://account.app.net/oauth/access_token")
 (def authorize-uri "https://account.app.net/oauth/authorize")
-(def host "https://alpha-api.app.net")
 
 (defn request-app-token
   "Sends a request for an access token that is tied to your
@@ -15,7 +14,8 @@
    :client-id
    :client-secret"
   [args]
-  (let [req {:form-params (assoc args :grant-type "client_credentials")}]
+  (let [params (assoc args :grant-type "client_credentials")
+        req {:form-params (http/transform-keys http/encode-key params)}]
     (:body (http/request :post access-token-uri req))))
 
 (defn request-server-token
@@ -27,7 +27,8 @@
    :redirect-uri
    :code"
   [args]
-  (let [req {:form-params (assoc args :grant-type "authorization_code")}]
+  (let [params (assoc args :grant-type "authorization_code")
+        req {:form-params (http/transform-keys http/encode-key params)}]
     (:body (http/request :post access-token-uri req))))
 
 (defn ^:private generate-auth-url
