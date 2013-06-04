@@ -2,7 +2,7 @@
 
 A Clojure library for the [App.net API](http://developers.app.net). An [App.net Developer account](https://join.app.net/signup?plan=developer) is required to use this library.
 
-# Installation
+## Installation
 
 Paprika is available on [Clojars](https://clojars.org/com.literallysoftware/paprika). Add the following dependency to your `project.clj` in order to use it.
 
@@ -10,7 +10,7 @@ Paprika is available on [Clojars](https://clojars.org/com.literallysoftware/papr
 [com.literallysoftware/paprika "0.0.1"]
 ```
 
-Note: Paprika is considered unstable until version 1.0.0 is released.
+*Note:* Paprika is considered unstable until version 1.0.0 is released.
 
 ## License
 
