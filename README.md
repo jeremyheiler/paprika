@@ -12,6 +12,12 @@ Paprika is available on [Clojars](https://clojars.org/com.literallysoftware/papr
 
 *Note:* Paprika is considered unstable until version 1.0.0 is released.
 
+## Support
+
+* Search the [issues](/issues), and open one if you didn't find your answer.
+* Message [@literally](https://app.net/literally) or [@jeremyheiler](https://app.net/jeremyheiler) on App.net.
+* Join the [Paprika](http://patter-app.net/room.html?channel=17641) Patter room.
+
 ## License
 
 Copyright © 2013 Literally Software Inc.
