@@ -12,9 +12,9 @@ Paprika is available on [Clojars](https://clojars.org/com.literallysoftware/papr
 
 ### Getting Started
 
-The first thing you need to do is obtain an access token. If you have a developer account, you can [generate one](https://account.app.net/developer/apps/) from one of your apps. You could also tru using [lein-paprika](https://github.com/literally/lein-paprika) to generate one from Leiningen. If you don't have a developer account, you can use [Dev Lite](http://dev-lite.jonathonduerig.com/) to generate one.
+The first thing you need to do is obtain an access token. If you have a developer account, you can [generate one](https://account.app.net/developer/apps/) from one of your apps. You could also try using [lein-paprika](https://github.com/literally/lein-paprika) to generate one from Leiningen. If you don't have a developer account, you can use [Dev Lite](http://dev-lite.jonathonduerig.com/) to generate one.
 
-Once you have a token, launch a REPL and store your token in a var so it's easy to refer to.
+Once you have a token, launch a REPL and store your token in a var so it's easy to refer to later.
 
 ```clojure
 (def t "YOUR_TOKEN")
@@ -26,11 +26,13 @@ Then require `paprika.core`. Here the namespace is aliased as `adn`.
 (require '[paprika.core :as adn])
 ```
 
-In `paprika.core` there is a function for every App.net endpoint for User and Post objects. The next few sections will walk through using a few of them to give an idea for how they map to the API.
+In `paprika.core` there is a function for every App.net endpoint for User and Post objects. The next few sections will walk you through using two of them to give an idea for how they map to the API.
+
+Also, it is suggested that you wrap each of the function calls with `clojure.pprint/pprint` so it's easier to read the output.
 
 ### Looking Up a User
 
-Each endpoint function follows a general input and output structure. Lets use `lookup-user` as an example. It only requires one argument, and that is the user's ID, their @username, or the string "me" for the currently authenticated user.
+Each endpoint function follows a general input and output structure. Lets use `lookup-user` as our first example. It requires one argument, and that is one of three possible user identifiers. You can provide the user's ID, their @username as a string (including the @ symbol), or the string "me" for the currently authenticated user.
 
 ```clojure
 ;; Lookup the currently authenticated user.
@@ -48,11 +50,14 @@ Each of those calls will return the [User object](http://developers.app.net/docs
 ;; Return the entire response envelope
 (adn/lookup-user "me" {:return :envelope})
 ;;=> {:meta {...} :data {...}}
+
+;; Return the entire response (for debugging)
+(adn/lookup-user "me" {:return :response})
 ```
 
-The default value for `:return` is `:data`. You can also specify `:response` to return the entire response. This is useful for debugging purposes.
+The default value for `:return` is `:data`. This option is specific to Paprika and is not part of the App.net API.
 
-The options map is also where you would provide general parameters such as the pagination and annotation parameters. For example, the API allows you to not include the HTML version of the user's profile description. To do that you provide the `:include-html` option.
+The options map is also where you would provide general parameters such as the pagination and annotation parameters. Each object also has a set of general query parameters. For example, the API allows you to not include the HTML version of the user's profile description.
 
 ```clojure
 (adn/lookup-user "me" {:include-html 0})
@@ -62,7 +67,7 @@ You should notice that `:html` is no longer in map for the `:description`.
 
 ### Creating a Post
 
-In order to create a post, you need to have an access token. You simply provide this as part of the options map. (In case you skipped the first steps, the var `t` refers to your access token.)
+In order to create a post, you need to have an access token. You provide this as part of the options map. While an access token is not optional for creating a post, it is optional for other endpoints, so that is why it is in the options ma. (In case you skipped the first steps, the var `t` refers to your access token.)
 
 ```clojure
 (adn/create-post "I am posting this from my #clojure repl!" {:access-token t})
