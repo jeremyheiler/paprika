@@ -100,7 +100,7 @@
 
 (defn api-request
   ([method path opts]
-     (api-request path {} opts))
+     (api-request method path {} opts))
   ([method path data opts]
      (let [url (str "https://alpha-api.app.net/stream/0" path)]
        (request method url data opts))))

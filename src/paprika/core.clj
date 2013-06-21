@@ -54,122 +54,122 @@
 (defn lookup-user
   "Returns the specified user."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id) opts))
+  (http/api-request :get (str "/users/" user-id) opts))
 
 (defn lookup-users
   "Returns the users specified by their \"user-id\". The ids must be
   provided as a sequential collection like a vector."
   [user-ids & [opts]]
-  (http/request :get "/users" (assoc opts :ids (join-ids user-ids))))
+  (http/api-request :get "/users" (assoc opts :ids (join-ids user-ids))))
 
 (defn update-user
   "Update the given fields for the currently authenticated user."
   [data & [opts]]
-  (http/request :patch "/users/me" data opts))
+  (http/api-request :patch "/users/me" data opts))
 
 (defn update-user-object ;; TODO This needs a better name.
   "Update the currently authenticated user object."
   [data & [opts]]
-  (http/request :put "/users/me" data opts))
+  (http/api-request :put "/users/me" data opts))
 
 (defn lookup-avatar
   "Returns the bytes for the user's avatar."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/avatar") opts))
+  (http/api-request :get (str "/users/" user-id "/avatar") opts))
 
 ;; TODO upload-avatar
 
 (defn lookup-cover
   "Returns the bytes for the user's cover."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/cover") opts))
+  (http/api-request :get (str "/users/" user-id "/cover") opts))
 
 ;; TODO upload-cover
 
 (defn follow-user
   "Follow the given user."
   [user-id & [opts]]
-  (http/request :post (str "/users/" user-id "/follow") opts))
+  (http/api-request :post (str "/users/" user-id "/follow") opts))
 
 (defn unfollow-user
   "Unfollow the given user."
   [user-id & [opts]]
-  (http/request :delete (str "/users/" user-id "/follow") opts))
+  (http/api-request :delete (str "/users/" user-id "/follow") opts))
 
 (defn mute-user
   "Mute the given user."
   [user-id & [opts]]
-  (http/request :post (str "/users/" user-id "/mute") opts))
+  (http/api-request :post (str "/users/" user-id "/mute") opts))
 
 (defn unmute-user
   "Unmute the given user."
   [user-id & [opts]]
-  (http/request :delete (str "/users/" user-id "/mute") opts))
+  (http/api-request :delete (str "/users/" user-id "/mute") opts))
 
 (defn block-user
   "Block the given user."
   [user-id & [opts]]
-  (http/request :post (str "/users/" user-id "/block" opts)))
+  (http/api-request :post (str "/users/" user-id "/block" opts)))
 
 (defn unblock-user
   "Unblock the given user."
   [user-id & [opts]]
-  (http/request :delete (str "/users/" user-id "/block") opts))
+  (http/api-request :delete (str "/users/" user-id "/block") opts))
 
 (defn search-users
   "Search for users. Optional :count"
   [search-query & [opts]]
-  (http/request :get "/users/search" (assoc opts :q search-query)))
+  (http/api-request :get "/users/search" (assoc opts :q search-query)))
 
 (defn lookup-following
   "Lookup the users the given user is following."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/following") opts))
+  (http/api-request :get (str "/users/" user-id "/following") opts))
 
 (defn lookup-following-ids
   "Lookup the IDS of the users the given user is following."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/following/ids") opts))
+  (http/api-request :get (str "/users/" user-id "/following/ids") opts))
 
 (defn lookup-followers
   "Lookup the users following the given user."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/followers") opts))
+  (http/api-request :get (str "/users/" user-id "/followers") opts))
 
 (defn lookup-followers-ids
   "Lookup the IDs of the users following the given user."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/followers/ids") opts))
+  (http/api-request :get (str "/users/" user-id "/followers/ids") opts))
 
 (defn lookup-muted-users
   "Lookup the users muted by the given user."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/muted") opts))
+  (http/api-request :get (str "/users/" user-id "/muted") opts))
 
 (defn lookup-muted-user-ids
   "Lookup the IDs of the users muted by the given users."
   [user-ids & [opts]]
-  (http/request :get "/users/muted/ids" (assoc opts :ids (join-ids user-ids))))
+  (http/api-request :get "/users/muted/ids" (assoc opts :ids (join-ids user-ids))))
 
 (defn lookup-blocked-users
   "Lookup the users blocked by the given user."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/blocked") opts))
+  (http/api-request :get (str "/users/" user-id "/blocked") opts))
 
 (defn lookup-blocked-user-ids
   "Lookup the IDs of the users blocked by the given users."
   [& [opts]]
-  (http/request :get "/users/blocked/ids" opts))
+  (http/api-request :get "/users/blocked/ids" opts))
 
 (defn lookup-repost-users
   "Lookup the users who have reposted the given post."
   [post-id & [opts]]
-  (http/request :get (str "/posts/" post-id "/reposters") opts))
+  (http/api-request :get (str "/posts/" post-id "/reposters") opts))
 
 (defn lookup-star-users
   "Lookup the users who have starred the given post."
   [post-id & [opts]]
-  (http/request :get (str "/posts/" post-id "/stars") opts))
+  (http/api-request :get (str "/posts/" post-id "/stars") opts))
 
 (defn create-post
   "Create a new post. The first parameter could be a string or a map.
@@ -181,93 +181,93 @@
   (let [data (if (string? data)
                {:text data}
                data)]
-    (http/request :post "/posts" data opts)))
+    (http/api-request :post "/posts" data opts)))
 
 (defn lookup-post
   "Return the specified post."
   [post-id & [opts]]
-  (http/request :get (str "/posts/" post-id) opts))
+  (http/api-request :get (str "/posts/" post-id) opts))
 
 (defn lookup-posts
   ""
   [post-ids & [opts]]
-  (http/request :get "/posts" (assoc opts :ids (join-ids post-ids))))
+  (http/api-request :get "/posts" (assoc opts :ids (join-ids post-ids))))
 
 (defn lookup-user-posts
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/posts") opts))
+  (http/api-request :get (str "/users/" user-id "/posts") opts))
 
 (defn delete-post
   "Delete the specified post."
   [post-id & [opts]]
-  (http/request :delete (str "/posts/" post-id) opts))
+  (http/api-request :delete (str "/posts/" post-id) opts))
 
 (defn repost-post ;; TODO share-post?
   "Share a post (repost) with your followers."
   [post-id & [opts]]
-  (http/request :post (str "/posts/" post-id "/repost") opts))
+  (http/api-request :post (str "/posts/" post-id "/repost") opts))
 
 (defn unrepost-post ;; TODO unshare-post?
   ""
   [post-id & [opts]]
-  (http/request :delete (str "/posts/" post-id "/repost") opts))
+  (http/api-request :delete (str "/posts/" post-id "/repost") opts))
 
 (defn star-post
   "Star the specified post."
   [post-id & [opts]]
-  (http/request :post (str "/posts/" post-id "/star") opts))
+  (http/api-request :post (str "/posts/" post-id "/star") opts))
 
 (defn unstar-post
   "Star the specified post."
   [post-id & [opts]]
-  (http/request :delete (str "/posts/" post-id "/star") opts))
+  (http/api-request :delete (str "/posts/" post-id "/star") opts))
 
 (defn retrieve-posts-created-by-user
   "Get the most recent posts created by a specific user in reverse
   post order."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/posts") opts))
+  (http/api-request :get (str "/users/" user-id "/posts") opts))
 
 (defn retrieve-posts-starred-by-user
   "Get the most recent posts starred by a specific user in reverse
   post order"
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/stars") opts))
+  (http/api-request :get (str "/users/" user-id "/stars") opts))
 
 (defn retrieve-posts-with-mention
   "Get the most recent posts mentioned by a specific user in reverse
   post order."
   [user-id & [opts]]
-  (http/request :get (str "/users/" user-id "/mentions") opts))
+  (http/api-request :get (str "/users/" user-id "/mentions") opts))
 
 (defn retrieve-tagged-posts
   "Return the 20 most recent posts for a specific hashtag."
   [hashtag & [opts]]
-  (http/request :get (str "/posts/tag/" hashtag) opts))
+  (http/api-request :get (str "/posts/tag/" hashtag) opts))
 
 (defn retrieve-replies
   "Retrieve the replies to a post."
   [post-id & [opts]]
-  (http/request :get (str "/posts/" post-id "/replies") opts))
+  (http/api-request :get (str "/posts/" post-id "/replies") opts))
 
 (defn retrieve-stream
   "Return the 20 most recent posts from the current user and the user's
   they follow"
   [& [opts]]
-  (http/request :get "/posts/stream" opts))
+  (http/api-request :get "/posts/stream" opts))
 
 (defn retrieve-unified-stream
   "Return the 20 most recent posts from the current user's
   personalized stream and mentions stream merged into one stream."
   [& [opts]]
-  (http/request :get "/posts/stream/unified" opts))
+  (http/api-request :get "/posts/stream/unified" opts))
 
 (defn retrieve-global-stream
   "Return the 20 most recent posts from the global stream."
   [& [opts]]
-  (http/request :get "/posts/stream/global" opts))
+  (http/api-request :get "/posts/stream/global" opts))
 
 (defn report-post
   "Report the specified post."
   [post-id & [opts]]
-  (http/request :post (str "/posts/" post-id "/report") opts))
+  (http/api-request :post (str "/posts/" post-id "/report") opts))
