@@ -1,5 +1,6 @@
 (ns paprika.auth
   (:require [paprika.http :as http]
+            [paprika.util :as util]
             [clj-http.client :as http-client]))
 
 (def authenticate-uri "https://account.app.net/oauth/authenticate")
@@ -13,10 +14,9 @@
   Required args
    :client-id
    :client-secret"
-  [args]
-  (let [params (assoc args :grant-type "client_credentials")
-        req {:form-params (http/transform-keys http/encode-key params)}]
-    (:body (http/request :post access-token-uri req))))
+  [data]
+  (let [data (assoc data :grant-type "client_credentials")]
+    (http/request :post access-token-uri data {:target-format :url-encoded})))
 
 (defn request-server-token
   "Sends a request for an access token that is tied to a user.
@@ -25,15 +25,20 @@
    :client-id
    :client-secret
    :redirect-uri
-   :code"
-  [args]
-  (let [params (assoc args :grant-type "authorization_code")
-        req {:form-params (http/transform-keys http/encode-key params)}]
-    (:body (http/request :post access-token-uri req))))
+   :code
+
+  Optional args:
+   :force-permissions?"
+  [data]
+  (let [url (if (:force-permissions? data) authorize-uri access-token-uri)
+        data (-> data
+                 (dissoc :force-permissions?)
+                 (assoc :grant-type "authorization_code"))]
+    (http/request :post url data {:target-format :url-encoded})))
 
 (defn ^:private generate-auth-url
   [args]
-  (let [args (http/transform-keys http/encode-key args)]
+  (let [args (util/transform-keys util/encode-key args)]
     (str authenticate-uri "?" (http-client/generate-query-string args))))
 
 (defn generate-server-auth-url

@@ -1,89 +1,106 @@
 (ns paprika.http
-  (:require [clojure.string :as string]
-            [clojure.walk :as walk]
-            [clj-http.client :as http-client]
-            [cheshire.core :as json]))
+  (:require [clj-http.client :as http-client]
+            [cheshire.core :as json]
+            [paprika.util :as util]))
 
-(def host "https://alpha-api.app.net")
+(defn wrap-query-params
+  "Dash-case the query parameters if they're present."
+  [client]
+  (fn [request]
+    (client (if-let [params (:query-params request)]
+              (assoc request :query-params (util/encode params))
+              request))))
 
-(defn decode-key
-  "Convert key from \"json_case\" to :clojure-case."
-  [key]
-  (keyword (string/replace key #"_" "-")))
+(defn wrap-form-params
+  "Dash-case the form parameters if they're present."
+  [client]
+  (fn [request]
+    (client (let [body (:body request)]
+              (if (and body (= :url-encoded (:target-format request)))
+                (assoc (dissoc request :body) :form-params (util/encode body))
+                request)))))
 
-(defn encode-key
-  "Convert key from :clojure-case to \"json_case\"."
-  [key]
-  (string/replace (name key) #"-" "_"))
+(defn wrap-json
+  "Ensure the HTTP body of a request is converting to JSON and the
+  HTTP body of the response is converted to EDN."
+  [client]
+  (fn [request]
+    (let [request (if-let [body (:body request)]
+                    (assoc request
+                      :body (json/encode body {:key-fn util/encode-key})
+                      :content-type "application/json")
+                    request)
+          response (client request)
+          content-type (get-in response [:headers "content-type"])
+          return-format (:return-format request)
+          return (:return request)]
+      (if (and (= content-type "application/json")
+               (or (= :clojure return-format)
+                   (and (= :data return) (= :json return-format))))
+        (update-in response [:body] json/decode util/decode-key)
+        response))))
 
-(defn transform-keys
-  "Recursively transforms all map keys in coll with t."
-  [t coll]
-  (let [f (fn [[k v]] [(t k) v])]
-    (walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) coll)))
+(def middleware [#'wrap-json #'wrap-query-params #'wrap-form-params])
 
-(defn request
-  ([method url req]
-     (let [req (assoc req
+(defn ^:dynamic raw-request
+  [request]
+  (http-client/with-middleware (concat http-client/default-middleware middleware)
+    (http-client/request request)))
+
+(defn ^:dynamic request
+  "Make an HTTP request to the API.
+
+  Non-App.net Options:
+
+    :accept-format - The format of the data being passed in.
+
+      :clojure (default)
+      :json
+
+    :target-format - The format the data needs to be on the request.
+
+      :json (default)
+      :url-encoded
+
+    :return-format - The format of the response envelope.
+
+      :clojure (default)
+      :json
+
+    :return - Change what is returned.
+
+      :response - Return the entire clj-http response
+      :envelope - Return the App.net response envelope
+      :data - Return the data from the response envelope (default)
+
+  "
+  [method url data opts]
+  (let [request {:oauth-token (:access-token opts)
+                 :target-format (:target-format opts :json)
+;;                 :accept-format (:accept-format opts :clojure)
+                 :return-format (:return-format opts :clojure)
+                 :return (:return opts :data)
                  :throw-exceptions false
                  :method method
-                 :url url)
-           _ (clojure.pprint/pprint req)
-           res (http-client/request req)
-           ]
-       (if-let [body (:body res)]
-         (assoc res :body (json/decode body decode-key))
-         res)))
-  ([method url req token]
-     (request method url (assoc req :oauth-token token))))
+                 :url url}
+        opts (dissoc opts :access-token :target-format :return-format :return)
+        request (-> request
+                    (cond-> (seq opts) (assoc :query-params opts))
+                    (cond-> (seq data) (assoc :body data)))
+        response (raw-request request)
+        envelope (:body response)]
+    (if (and (= :clojure (:return-format request)) (<= 400 (:status response)))
+      (throw (ex-info (get-in envelope [:meta :error-message]) envelope))
+      (condp = (:return request)
+        :data (if (= :json (:return-format request))
+                (json/encode (:data envelope) {:key-fn util/encode-key})
+                (:data envelope))
+        :envelope envelope
+        :response response))))
 
-(defn split-path
-  "Split a path into a sequence of path segments."
-  [path]
-  (letfn [(f [segment]
-            (if (.startsWith segment ":")
-              (keyword (subs segment 1))
-              segment))]
-    (map f (string/split path #"/"))))
-
-(defn replace-keys
-  "Replaces the keywords in the split path with their values."
-  [path-segments input]
-  (letfn [(f [segment]
-            (if (keyword? segment)
-              (str (get input segment))
-              segment))]
-    (string/join "/" (map f path-segments))))
-
-(defn apply-handlers
-  ""
-  [input handlers]
-  (letfn [(f [new-input [k v]]
-            (update-in new-input [k] v))]
-    (reduce f input handlers)))
-
-(defmacro define-endpoint
-  ""
-  [endpoint-name http-method path & opts]
-  (let [opts (apply hash-map opts)
-        path-segments (split-path path)
-        replace-keys? (seq (filter keyword? path-segments))
-        input (gensym)]
-    `(defn ~endpoint-name
-       ([input#]
-          (~endpoint-name input# nil))
-       ([~input token#]
-          (let [~input ~(if-let [handlers (:handlers opts)]
-                          (list apply-handlers input handlers)
-                          input)]
-            (request ~http-method
-                     ~(if replace-keys?
-                        (list str (str host "/stream/0") (list replace-keys (vec path-segments) input))
-                        (str host "/stream/0" path))
-                     (merge
-                      (when-let [body# (select-keys ~input ~(:body-keys opts))]
-                        {:content-type "application/json"
-                         :body (json/encode body# {:key-fn encode-key})})
-                      (when-let [params# (select-keys ~input ~(:query-keys opts))]
-                        {:query-params params#}))
-                     token#))))))
+(defn api-request
+  ([method path opts]
+     (api-request path {} opts))
+  ([method path data opts]
+     (let [url (str "https://alpha-api.app.net/stream/0" path)]
+       (request method url data opts))))

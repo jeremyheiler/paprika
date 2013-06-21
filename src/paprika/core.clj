@@ -1,75 +1,273 @@
 (ns paprika.core
+  "This namespace contains a function for every App.net endpoint.
+
+  Each endpoint function has an opts parameter for various options
+  that effect the request or response. Unless noted, any values in
+  this map will become part of the query string.
+
+  Global Options:
+
+    :access-token
+
+      This is the access token used to authenticate the request. This
+      value is put on the request as the Authorization header. Some
+      endpoints work without an access token.
+
+  The opts parameter for any endpoint function is an optional map that contains
+  Authenticated requests require an :access-token key in the opts map.
+
+  Whenever a \"user-id\" is required, one of the following can be used:
+    - The user's ID (as an integer or, preferably, as a string).
+    - The user's username with the @ symbol prefixed, i.e. \"@literally\".
+    - The string \"me\" for the currently authenticated user.
+
+  General User Parameters:
+
+    :include-annotations
+
+      Type: integer; 0 or 1
+
+      Specifies whether or not annotations should be included in the
+      response.
+
+    :include-user-annotations
+
+      Type: integer; 0 or 1
+
+      Specifies whether or not user annotations should be included in
+      the response.
+
+    :include-html
+
+      Type: integer; 0 or 1
+
+      Specifies whether or not the description's :html field should be
+      included along with the :text field.
+  "
   (:require [clojure.string :as string]
-            [paprika.http :refer [define-endpoint]]))
+            [paprika.http :as http]))
 
-(comment
-(define-resource post
-  :body-keys []
-  :form-keys [:include-muted
-              :include-deleted
-              :include-directed-posts
-              :include-machine
-              :include-starred-by
-              :include-reposters
-              :include-annotations
-              :include-post-annotations
-              :include-user-annotations
-              :include-html])
-)
+(defn ^:private join-ids
+  [user-ids]
+  (string/join "," user-ids))
 
-(define-endpoint create-post
-  :post "/posts"
-  :body-keys [:text :reply-to])
+(defn lookup-user
+  "Returns the specified user."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id) opts))
 
-(define-endpoint retrieve-post
-  :get "/posts/:post-id")
+(defn lookup-users
+  "Returns the users specified by their \"user-id\". The ids must be
+  provided as a sequential collection like a vector."
+  [user-ids & [opts]]
+  (http/request :get "/users" (assoc opts :ids (join-ids user-ids))))
 
-(define-endpoint delete-post
-  :delete "/posts/:post-id")
+(defn update-user
+  "Update the given fields for the currently authenticated user."
+  [data & [opts]]
+  (http/request :patch "/users/me" data opts))
 
-(define-endpoint repost
-  :post "/posts/:post-id/repost")
+(defn update-user-object ;; TODO This needs a better name.
+  "Update the currently authenticated user object."
+  [data & [opts]]
+  (http/request :put "/users/me" data opts))
 
-(define-endpoint unrepost
-  :delete "/posts/:post-id/repost")
+(defn lookup-avatar
+  "Returns the bytes for the user's avatar."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/avatar") opts))
 
-(define-endpoint star-post
-  :post "/posts/:post-id/star")
+;; TODO upload-avatar
 
-(define-endpoint unstar-post
-  :delete "/posts/:post-id/star")
+(defn lookup-cover
+  "Returns the bytes for the user's cover."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/cover") opts))
 
-(define-endpoint retrieve-posts
-  :get "/posts"
-  :query-keys [:ids]
-  :handlers {:ids (fn [v]
-                    (if (string? v)
-                      v
-                      (string/join "," v)))})
+;; TODO upload-cover
 
-(define-endpoint retrieve-posts-created-by-user
-  :get "/users/:user-id/posts")
+(defn follow-user
+  "Follow the given user."
+  [user-id & [opts]]
+  (http/request :post (str "/users/" user-id "/follow") opts))
 
-(define-endpoint retrieve-posts-starred-by-user
-  :get "/users/:user-id/stars")
+(defn unfollow-user
+  "Unfollow the given user."
+  [user-id & [opts]]
+  (http/request :delete (str "/users/" user-id "/follow") opts))
 
-(define-endpoint retrieve-posts-with-mention
-  :get "/users/:user-id/mentions")
+(defn mute-user
+  "Mute the given user."
+  [user-id & [opts]]
+  (http/request :post (str "/users/" user-id "/mute") opts))
 
-(define-endpoint retrieve-tagged-posts
-  :get "/posts/tag/:hashtag")
+(defn unmute-user
+  "Unmute the given user."
+  [user-id & [opts]]
+  (http/request :delete (str "/users/" user-id "/mute") opts))
 
-(define-endpoint retrieve-replies
-  :get "/posts/:post-id/replies")
+(defn block-user
+  "Block the given user."
+  [user-id & [opts]]
+  (http/request :post (str "/users/" user-id "/block" opts)))
 
-(define-endpoint retrieve-stream
-  :get "/posts/stream")
+(defn unblock-user
+  "Unblock the given user."
+  [user-id & [opts]]
+  (http/request :delete (str "/users/" user-id "/block") opts))
 
-(define-endpoint retrieve-unified-stream
-  :get "/posts/stream/unified")
+(defn search-users
+  "Search for users. Optional :count"
+  [search-query & [opts]]
+  (http/request :get "/users/search" (assoc opts :q search-query)))
 
-(define-endpoint retrieve-global-stream
-  :get "/posts/stream/gloal")
+(defn lookup-following
+  "Lookup the users the given user is following."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/following") opts))
 
-(define-endpoint report-post
-  :post "/posts/:post-id/report")
+(defn lookup-following-ids
+  "Lookup the IDS of the users the given user is following."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/following/ids") opts))
+
+(defn lookup-followers
+  "Lookup the users following the given user."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/followers") opts))
+
+(defn lookup-followers-ids
+  "Lookup the IDs of the users following the given user."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/followers/ids") opts))
+
+(defn lookup-muted-users
+  "Lookup the users muted by the given user."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/muted") opts))
+
+(defn lookup-muted-user-ids
+  "Lookup the IDs of the users muted by the given users."
+  [user-ids & [opts]]
+  (http/request :get "/users/muted/ids" (assoc opts :ids (join-ids user-ids))))
+
+(defn lookup-blocked-users
+  "Lookup the users blocked by the given user."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/blocked") opts))
+
+(defn lookup-blocked-user-ids
+  "Lookup the IDs of the users blocked by the given users."
+  [& [opts]]
+  (http/request :get "/users/blocked/ids" opts))
+
+(defn lookup-repost-users
+  "Lookup the users who have reposted the given post."
+  [post-id & [opts]]
+  (http/request :get (str "/posts/" post-id "/reposters") opts))
+
+(defn lookup-star-users
+  "Lookup the users who have starred the given post."
+  [post-id & [opts]]
+  (http/request :get (str "/posts/" post-id "/stars") opts))
+
+(defn create-post
+  "Create a new post. The first parameter could be a string or a map.
+  If it's a string, it will be sent as the text of the post. If it's a
+  map, then it requires the :text field. If the post is a reply, then
+  it must also contain the :reply-to field, which is the post ID of
+  the parent post. Post annotations can also be provided."
+  [data & [opts]]
+  (let [data (if (string? data)
+               {:text data}
+               data)]
+    (http/request :post "/posts" data opts)))
+
+(defn lookup-post
+  "Return the specified post."
+  [post-id & [opts]]
+  (http/request :get (str "/posts/" post-id) opts))
+
+(defn lookup-posts
+  ""
+  [post-ids & [opts]]
+  (http/request :get "/posts" (assoc opts :ids (join-ids post-ids))))
+
+(defn lookup-user-posts
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/posts") opts))
+
+(defn delete-post
+  "Delete the specified post."
+  [post-id & [opts]]
+  (http/request :delete (str "/posts/" post-id) opts))
+
+(defn repost-post ;; TODO share-post?
+  "Share a post (repost) with your followers."
+  [post-id & [opts]]
+  (http/request :post (str "/posts/" post-id "/repost") opts))
+
+(defn unrepost-post ;; TODO unshare-post?
+  ""
+  [post-id & [opts]]
+  (http/request :delete (str "/posts/" post-id "/repost") opts))
+
+(defn star-post
+  "Star the specified post."
+  [post-id & [opts]]
+  (http/request :post (str "/posts/" post-id "/star") opts))
+
+(defn unstar-post
+  "Star the specified post."
+  [post-id & [opts]]
+  (http/request :delete (str "/posts/" post-id "/star") opts))
+
+(defn retrieve-posts-created-by-user
+  "Get the most recent posts created by a specific user in reverse
+  post order."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/posts") opts))
+
+(defn retrieve-posts-starred-by-user
+  "Get the most recent posts starred by a specific user in reverse
+  post order"
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/stars") opts))
+
+(defn retrieve-posts-with-mention
+  "Get the most recent posts mentioned by a specific user in reverse
+  post order."
+  [user-id & [opts]]
+  (http/request :get (str "/users/" user-id "/mentions") opts))
+
+(defn retrieve-tagged-posts
+  "Return the 20 most recent posts for a specific hashtag."
+  [hashtag & [opts]]
+  (http/request :get (str "/posts/tag/" hashtag) opts))
+
+(defn retrieve-replies
+  "Retrieve the replies to a post."
+  [post-id & [opts]]
+  (http/request :get (str "/posts/" post-id "/replies") opts))
+
+(defn retrieve-stream
+  "Return the 20 most recent posts from the current user and the user's
+  they follow"
+  [& [opts]]
+  (http/request :get "/posts/stream" opts))
+
+(defn retrieve-unified-stream
+  "Return the 20 most recent posts from the current user's
+  personalized stream and mentions stream merged into one stream."
+  [& [opts]]
+  (http/request :get "/posts/stream/unified" opts))
+
+(defn retrieve-global-stream
+  "Return the 20 most recent posts from the global stream."
+  [& [opts]]
+  (http/request :get "/posts/stream/global" opts))
+
+(defn report-post
+  "Report the specified post."
+  [post-id & [opts]]
+  (http/request :post (str "/posts/" post-id "/report") opts))
