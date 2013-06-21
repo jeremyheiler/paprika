@@ -84,7 +84,7 @@ You may be wondering why `:reply-to` is not in the options map. This is because 
 
 ## Support
 
-* Search the [issues](/issues), and open one if you didn't find your answer.
+* Search the [issues](/issues), and open one (or a pull request) if you didn't find your answer.
 * Message [@literally](https://app.net/literally) or [@jeremyheiler](https://app.net/jeremyheiler) on App.net.
 * Join the [Paprika](http://patter-app.net/room.html?channel=17641) Patter room.
 
