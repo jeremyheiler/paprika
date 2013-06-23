@@ -313,3 +313,7 @@
 (defn process-text
   [data & [opts]]
   (http/api-request :post "/text/process" data opts))
+
+(defn mark-stream
+  [data & [opts]]
+  (http/api-request :post "/posts/marker" data opts))
