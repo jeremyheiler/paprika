@@ -1,6 +1,6 @@
 # Paprika
 
-A Clojure library for the [App.net API](http://developers.app.net). An [App.net Developer account](https://join.app.net/signup?plan=developer) is required to use this library.
+A Clojure library for the [App.net API](http://developers.app.net).
 
 ## Usage
 
@@ -12,12 +12,14 @@ Paprika is available on [Clojars](https://clojars.org/com.literallysoftware/papr
 
 ### Getting Started
 
-The first thing you need to do is obtain an access token. If you have a developer account, you can [generate one](https://account.app.net/developer/apps/) from one of your apps. You could also try using [lein-paprika](https://github.com/literally/lein-paprika) to generate one from Leiningen. If you don't have a developer account, you can use [Dev Lite](http://dev-lite.jonathonduerig.com/) to generate one.
+An [App.net Developer account](https://join.app.net/signup?plan=developer) or a token from [Dev Lite](http://dev-lite.jonathonduerig.com/) is required for authenticated API requests. If you have a developer account, you can [generate a token](https://account.app.net/developer/apps/) from one of your apps. Some endpoints don't require authentication, such as `lookup-user`, but you'll need a token to get the most use out of this library.
+
+#### Setting up a REPL
 
 Once you have a token, launch a REPL and store your token in a var so it's easy to refer to later.
 
 ```clojure
-(def t "YOUR_TOKEN")
+(def token "YOUR_TOKEN")
 ```
 
 Then require `paprika.core`. Here the namespace is aliased as `adn`.
@@ -26,25 +28,57 @@ Then require `paprika.core`. Here the namespace is aliased as `adn`.
 (require '[paprika.core :as adn])
 ```
 
-In `paprika.core` there is a function for every App.net endpoint for User and Post objects. The next few sections will walk you through using two of them to give an idea for how they map to the API.
+The next few sections will walk you through using a few of them to give an idea for how they map to the API. Also, you should wrap each call with `clojure.pprint/pprint` so it's easier to read the output.
 
-Also, it is suggested that you wrap each of the function calls with `clojure.pprint/pprint` so it's easier to read the output.
+### Creating a Post
+
+In order to create a post, you need the text for the post and a token.
+
+```clojure
+(adn/create-post {:text "I am posting this from my #clojure repl!"} {:access-token token})
+```
+
+Each endpoint function follows a general input and output structure. For `create-post`, the first argument is a map that represents the HTTP body. All endpoints that require an HTTP body will accept a map like this a function argument. In this case, the only required value in the map is the text of the post.
+
+The second argument is an options map. Every endpoint function accepts an options map as its last argument, however it is not required if there are no options. The example above shows that the token is provided via the options map.
+
+If you want to specify that the post is a reply to another post, you add the `:reply-to` key with the parent post ID as its value. This is provided with the text because it is part of the HTTP body.
+
+```clojure
+(adn/create-post {:text "This is a reply!" :reply-to "POST_ID"} {:access-token token})
+```
+
+The value returned from `create-post` is the Post object for the new post.
 
 ### Looking Up a User
 
-Each endpoint function follows a general input and output structure. Lets use `lookup-user` as our first example. It requires one argument, and that is one of three possible user identifiers. You can provide the user's ID, their @username as a string (including the @ symbol), or the string "me" for the currently authenticated user.
+In order to lookup a user, you need to provide the user's ID or their username.
 
 ```clojure
-;; Lookup the currently authenticated user.
-(adn/lookup-user "me")
-
-;; Lookup @literally
+;; Lookup "literally" by username
 (adn/lookup-user "@literally")
-;; or
+;; or by ID
 (adn/lookup-user "29711")
 ```
 
-Each of those calls will return the [User object](http://developers.app.net/docs/resources/user/) for that user by default. Specifically, it returns the value of the `data` key in the [response envelope](http://developers.app.net/docs/basics/responses/#response-envelope). If you want the entire response envelope returned, then you can specify that by passing in an options map as the last argument.
+The string "me" can be used along with a token to lookup the currently authenticated user.
+
+```clojure
+(adn/lookup-user "me" {:access-token token})
+```
+
+The main difference between `lookup-user` and `create-post` is that the former does not have an HTTP body. Instead you need to identify the user, and this information is provided as the first argument. As shown with teh first examples, the options map is not required when there are no options.
+
+Some options you can provide to `lookup-user` are the [general user parameters](http://developers.app.net/docs/resources/user/#general-parameters). Specifically, these are extra query paramters that allow you to alter the result of the request. For example, the API allows you to not include the HTML version of the user's profile description.
+
+```clojure
+(adn/lookup-user "@literally" {:include-html 0})
+```
+
+You should notice that `:html` is no longer in map for the `:description`.
+
+
+Each of those calls will return the [User object](http://developers.app.net/docs/resources/user/) for that user by default. Specifically, it returns the value of the `data` key in the [response envelope](http://developers.app.net/docs/basics/responses/#response-envelope). If you want the entire response envelope returned, then you can specify that by setting the `:return` key to `:envelope` in the options map.
 
 ```clojure
 ;; Return the entire response envelope
@@ -53,34 +87,10 @@ Each of those calls will return the [User object](http://developers.app.net/docs
 
 ;; Return the entire response (for debugging)
 (adn/lookup-user "me" {:return :response})
+;;=> {:status 200 :headers {...} :body {:meta {...} :data {..}}}
 ```
 
 The default value for `:return` is `:data`. This option is specific to Paprika and is not part of the App.net API.
-
-The options map is also where you would provide general parameters such as the pagination and annotation parameters. Each object also has a set of general query parameters. For example, the API allows you to not include the HTML version of the user's profile description.
-
-```clojure
-(adn/lookup-user "me" {:include-html 0})
-```
-
-You should notice that `:html` is no longer in map for the `:description`.
-
-### Creating a Post
-
-In order to create a post, you need to have an access token. You provide this as part of the options map. While an access token is not optional for creating a post, it is optional for other endpoints, so that is why it is in the options ma. (In case you skipped the first steps, the var `t` refers to your access token.)
-
-```clojure
-(adn/create-post "I am posting this from my #clojure repl!" {:access-token t})
-```
-
-For `create-post`, the first argument is the text of the post. If you want to specify that the post is a reply, you can pass in a map containing values for `:text` and `:reply-to`.
-
-```clojure
-;; Reply to a post by specifying the post ID of the parent post.
-(adn/create-post {:text "Post!" :reply-to "POST_ID"} {:access-token t})
-```
-
-You may be wondering why `:reply-to` is not in the options map. This is because the first argument to `create-post` is really the body of the HTTP POST request. Being able to provide just the text is a special case only for this function.
 
 ## Support
 
