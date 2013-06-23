@@ -52,11 +52,6 @@
 
   Non-App.net Options:
 
-    :accept-format - The format of the data being passed in.
-
-      :clojure (default)
-      :json
-
     :target-format - The format the data needs to be on the request.
 
       :json (default)
