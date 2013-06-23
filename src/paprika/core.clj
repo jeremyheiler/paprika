@@ -305,3 +305,7 @@
   (http/api-request :get "/places/search" (assoc opts
                                             :latitude latitude
                                             :longitude longitude)))
+
+(defn lookup-interactions
+  [& [opts]]
+  (http/api-request :get "/users/me/interactions" opts))
