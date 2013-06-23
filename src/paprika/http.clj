@@ -61,6 +61,7 @@
 
       :clojure (default)
       :json
+      :byte-array
 
     :return - Change what is returned.
 
@@ -78,6 +79,9 @@
                  :throw-exceptions false
                  :method method
                  :url url}
+        request (if (= (:return-format opts) :byte-array)
+                  (assoc request :as :byte-array)
+                  request)
         opts (dissoc opts :access-token :target-format :return-format :return)
         request (-> request
                     (cond-> (seq opts) (assoc :query-params opts))

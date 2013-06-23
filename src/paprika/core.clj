@@ -75,14 +75,22 @@
 (defn lookup-avatar
   "Returns the bytes for the user's avatar."
   [user-id & [opts]]
-  (http/api-request :get (str "/users/" user-id "/avatar") opts))
+  (http/api-request :get
+                    (str "/users/" user-id "/avatar")
+                    (assoc opts
+                      :return-format :byte-array
+                      :return :envelope)))
 
 ;; TODO upload-avatar
 
 (defn lookup-cover
   "Returns the bytes for the user's cover."
   [user-id & [opts]]
-  (http/api-request :get (str "/users/" user-id "/cover") opts))
+  (http/api-request :get
+                    (str "/users/" user-id "/cover")
+                    (assoc opts
+                      :return-format :byte-array
+                      :return :envelope)))
 
 ;; TODO upload-cover
 
