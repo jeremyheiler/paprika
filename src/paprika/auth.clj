@@ -38,7 +38,7 @@
 
 (defn ^:private generate-auth-url
   [args]
-  (let [args (util/transform-keys util/encode-key args)]
+  (let [args (util/encode args)]
     (str authenticate-uri "?" (http-client/generate-query-string args))))
 
 (defn generate-server-auth-url

@@ -12,16 +12,30 @@
   [key]
   (string/replace (name key) #"-" "_"))
 
-(defn transform-keys
-  "Recursively transforms all map keys in coll with t."
-  [t coll]
-  (let [f (fn [[k v]] [(t k) v])]
-    (walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) coll)))
+(defn encode-bool
+  [val]
+  (cond
+   (true? val) 1
+   (false? val) 0
+   :else val))
+
+(defn transform
+  "Recursively transforms all map keys with key transform function,
+  and map vals with the value transform function."
+  [key-t val-t coll]
+  (letfn [(f [t form]
+            (if (map? form)
+              (into {} (map t form))
+              form))
+          (g [[k v]]
+            [(if key-t (key-t k) k)
+             (if val-t (val-t v) v)])]
+    (walk/postwalk (partial f g) coll)))
 
 (defn encode
   [coll]
-  (transform-keys encode-key coll))
+  (transform encode-key encode-bool coll))
 
 (defn decode
   [coll]
-  (transform-keys decode-key coll))
+  (transform decode-key nil coll))

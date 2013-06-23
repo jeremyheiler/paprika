@@ -16,3 +16,8 @@
   (is (= :foo-bar (decode-key (encode-key :foo-bar))))
   (is (= "foo" (encode-key (decode-key "foo"))))
   (is (= "foo_bar" (encode-key (decode-key "foo_bar")))))
+
+(deftest test-encode-bool
+  (is (= 1 (encode-bool true)))
+  (is (= 0 (encode-bool false)))
+  (is (= :foo (encode-bool :foo))))
