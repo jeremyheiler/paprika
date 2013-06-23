@@ -51,6 +51,22 @@
   [user-ids]
   (string/join "," user-ids))
 
+(defn lookup-token
+  [& [opts]]
+  (http/api-request :get "/token" opts))
+
+(defn deauthorize-token
+  [& [opts]]
+  (http/api-request :delete "/token" opts))
+
+(defn lookup-authorized-user-ids
+  [& [opts]]
+  (http/api-request :get "/app/me/tokens/user_ids" opts))
+
+(defn lookup-authorized-user-tokens
+  [& [opts]]
+  (http/api-request :get "/app/me/tokens" opts))
+
 (defn lookup-user
   "Returns the specified user."
   [user-id & [opts]]
