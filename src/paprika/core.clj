@@ -295,3 +295,13 @@
   "Report the specified post."
   [post-id & [opts]]
   (http/api-request :post (str "/posts/" post-id "/report") opts))
+
+(defn lookup-place
+  [factual-id & [opts]]
+  (http/api-request :get (str "/places/" factual-id) opts))
+
+(defn search-places
+  [latitude longitude & [opts]]
+  (http/api-request :get "/places/search" (assoc opts
+                                            :latitude latitude
+                                            :longitude longitude)))
