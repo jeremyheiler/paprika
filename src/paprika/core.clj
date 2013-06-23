@@ -309,3 +309,7 @@
 (defn lookup-interactions
   [& [opts]]
   (http/api-request :get "/users/me/interactions" opts))
+
+(defn process-text
+  [data & [opts]]
+  (http/api-request :post "/text/process" data opts))
