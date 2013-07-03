@@ -317,3 +317,7 @@
 (defn mark-stream
   [data & [opts]]
   (http/api-request :post "/posts/marker" data opts))
+
+(defn lookup-files
+  [& [opts]]
+  (http/api-request :get "/users/me/files" opts))
