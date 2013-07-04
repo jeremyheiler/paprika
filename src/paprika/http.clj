@@ -89,7 +89,11 @@
         response (raw-request request)
         envelope (:body response)]
     (if (and (= :clojure (:return-format request)) (<= 400 (:status response)))
-      (throw (ex-info (get-in envelope [:meta :error-message]) envelope))
+      (let [ex #(ex-info % envelope)]
+        (cond
+         (:meta envelope) (throw (ex (get-in envelope [:meta :error-message])))
+         (:error envelope) (throw (ex (:error envelope)))
+         :else (throw (ex "Unknown error"))))
       (condp = (:return request)
         :data (if (= :json (:return-format request))
                 (json/encode (:data envelope) {:key-fn util/encode-key})
