@@ -16,7 +16,8 @@
    :client-secret"
   [data]
   (let [data (assoc data :grant-type "client_credentials")]
-    (http/request :post access-token-uri data {:target-format :url-encoded})))
+    (http/request :post access-token-uri data {:target-format :url-encoded
+                                               :return :envelope})))
 
 (defn request-server-token
   "Sends a request for an access token that is tied to a user.
@@ -34,7 +35,8 @@
         data (-> data
                  (dissoc :force-permissions?)
                  (assoc :grant-type "authorization_code"))]
-    (http/request :post url data {:target-format :url-encoded})))
+    (http/request :post url data {:target-format :url-encoded
+                                  :return :envelope})))
 
 (defn ^:private generate-auth-url
   [args]
