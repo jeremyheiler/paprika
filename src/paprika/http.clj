@@ -40,12 +40,11 @@
         (update-in response [:body] json/decode util/decode-key)
         response))))
 
-(def middleware [#'wrap-json #'wrap-query-params #'wrap-form-params])
-
 (defn ^:dynamic raw-request
   [request]
-  (http-client/with-middleware (concat http-client/default-middleware middleware)
-    (http-client/request request)))
+  (let [m [#'wrap-json #'wrap-query-params #'wrap-form-params]]
+    (http-client/with-middleware (concat http-client/default-middleware m)
+      (http-client/request request))))
 
 (defn ^:dynamic request
   "Make an HTTP request to the API.
