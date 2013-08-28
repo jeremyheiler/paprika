@@ -38,7 +38,7 @@
     (http/request :post url data {:target-format :url-encoded
                                   :return :envelope})))
 
-(defn ^:private generate-auth-url
+(defn- generate-auth-url
   [args]
   (let [args (util/encode args)]
     (str authenticate-uri "?" (http-client/generate-query-string args))))

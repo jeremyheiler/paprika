@@ -47,7 +47,7 @@
   (:require [clojure.string :as string]
             [paprika.http :as http]))
 
-(defn ^:private join-ids
+(defn- join-ids
   [user-ids]
   (string/join "," user-ids))
 
