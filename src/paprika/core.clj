@@ -314,6 +314,11 @@
   [data & [opts]]
   (http/api-request :post "/text/process" data opts))
 
+(defn config-vars
+  "Get variables which define the current behavior of the App.net platform."
+  [& [opts]]
+  (http/api-request :get "/config" opts))
+
 (defn mark-stream
   [data & [opts]]
   (http/api-request :post "/posts/marker" data opts))
