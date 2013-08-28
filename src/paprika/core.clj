@@ -230,6 +230,11 @@
   [user-id & [opts]]
   (http/api-request :get (str "/users/" user-id "/posts") opts))
 
+(defn find-posts
+  "Search for posts matching a query."
+  [opts]
+  (http/api-request :get "/posts/search" opts))
+
 (defn delete-post
   "Delete the specified post."
   [post-id & [opts]]
