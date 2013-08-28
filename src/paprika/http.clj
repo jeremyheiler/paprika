@@ -79,10 +79,11 @@
                  :throw-exceptions false
                  :method method
                  :url url}
+        request (merge request (:http-options opts))
         request (if (= (:return-format opts) :byte-array)
                   (assoc request :as :byte-array)
                   request)
-        opts (dissoc opts :access-token :target-format :return-format :return)
+        opts (dissoc opts :access-token :target-format :return-format :return :http-options)
         request (-> request
                     (cond-> (seq opts) (assoc :query-params opts))
                     (cond-> (seq data) (assoc :body data)))

@@ -45,7 +45,10 @@
       included along with the :text field.
   "
   (:require [clojure.string :as string]
-            [paprika.http :as http]))
+            [cheshire.core  :as json]
+            [pantomime.mime :refer [mime-type-of]]
+            [paprika.util   :as util]
+            [paprika.http   :as http]))
 
 (defn- join-ids [user-ids]
   (string/join "," user-ids))
@@ -346,3 +349,59 @@
   "Get the contents of a specific file."
   [file-id & [opts]]
   (http/api-request :get (str "/files/" file-id "/content") opts))
+
+(defn- utf8-bytes [s] (.getBytes s "UTF-8"))
+
+(defn- do-upload-file [data opts]
+  (http/api-request :post "/files"
+    (-> opts
+        (dissoc :kind :type :name :public :annotations)
+        (assoc :http-options {:multipart [
+          (assoc data :part-name "content")
+          {:name "metadata.json"
+           :part-name "metadata"
+           :content (-> (select-keys opts [:kind :type :name :public :annotations])
+                        (merge (:additional-metadata opts)) ; being future-proof
+                        (json/encode {:keyfn util/encode-key})
+                        utf8-bytes)
+           :mime-type "application/json"}
+          ]}))))
+
+(defn upload-file
+  "Upload a new file.
+  You can use a File, an InputStream, a byte array or a string.
+  If you use a File, you can omit the filename.
+
+  Options:
+
+    :type
+
+      Type: string
+
+      Specifies an App.net file type (eg. \"com.example.my-cool-app.hipster-selfie\".)
+      Required.
+
+    :mime-type
+
+      Type: string
+
+      Specifies a MIME type (eg. \"application/pdf\".)
+      Optional, but recommended. If you omit it, it will be guessed.
+
+    :additional-metadata
+
+      Type: map
+
+      Specifies any metadata you want to pass to the API.
+      You can also use the keys :kind, :annotations and :public directly.
+      Optional."
+  ([file opts]
+   {:pre [(instance? java.io.File file)]}
+   (upload-file (.getName file) file opts))
+  ([filename content opts]
+   (let [content (if (string? content) (utf8-bytes content) content)]
+     (do-upload-file
+       {:name filename
+        :mime-type (or (:mime-type opts) (mime-type-of content))
+        :content content}
+       opts))))
