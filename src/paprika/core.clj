@@ -265,7 +265,7 @@
   (http/api-request :get (str "/users/" user-id "/mentions") opts))
 
 (defn retrieve-tagged-posts
-  "Return the 20 most recent posts for a specific hashtag."
+  "Return the most recent posts for a specific hashtag."
   [hashtag & [opts]]
   (http/api-request :get (str "/posts/tag/" hashtag) opts))
 
@@ -275,19 +275,19 @@
   (http/api-request :get (str "/posts/" post-id "/replies") opts))
 
 (defn retrieve-stream
-  "Return the 20 most recent posts from the current user and the user's
+  "Return the most recent posts from the current user and the user's
   they follow"
   [& [opts]]
   (http/api-request :get "/posts/stream" opts))
 
 (defn retrieve-unified-stream
-  "Return the 20 most recent posts from the current user's
+  "Return the most recent posts from the current user's
   personalized stream and mentions stream merged into one stream."
   [& [opts]]
   (http/api-request :get "/posts/stream/unified" opts))
 
 (defn retrieve-global-stream
-  "Return the 20 most recent posts from the global stream."
+  "Return the most recent posts from the global stream."
   [& [opts]]
   (http/api-request :get "/posts/stream/global" opts))
 
