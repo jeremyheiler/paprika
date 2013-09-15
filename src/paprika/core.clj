@@ -101,9 +101,7 @@
   [user-id & [opts]]
   (http/api-request :get
                     (str "/users/" user-id "/avatar")
-                    (assoc opts
-                      :return-format :byte-array
-                      :return :envelope)))
+                    (assoc opts :return-format :byte-array)))
 
 ;; TODO upload-avatar
 
@@ -112,9 +110,7 @@
   [user-id & [opts]]
   (http/api-request :get
                     (str "/users/" user-id "/cover")
-                    (assoc opts
-                      :return-format :byte-array
-                      :return :envelope)))
+                    (assoc opts :return-format :byte-array)))
 
 ;; TODO upload-cover
 

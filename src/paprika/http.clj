@@ -34,9 +34,7 @@
           content-type (get-in response [:headers "content-type"])
           return-format (:return-format request)
           return (:return request)]
-      (if (and (= content-type "application/json")
-               (or (= :clojure return-format)
-                   (and (= :data return) (= :json return-format))))
+      (if (and (= content-type "application/json") (= :clojure return-format))
         (update-in response [:body] json/decode util/decode-key)
         response))))
 
@@ -62,27 +60,27 @@
       :json
       :byte-array
 
-    :return - Change what is returned.
-
-      :response - Return the entire clj-http response
-      :envelope - Return the App.net response envelope
-      :data - Return the data from the response envelope (default)
-
+    :debug? - If true, attache the HTTP response to the envelope as metadata
   "
   [method url data opts]
   (let [request {:oauth-token (:access-token opts)
                  :target-format (:target-format opts :json)
 ;;                 :accept-format (:accept-format opts :clojure)
                  :return-format (:return-format opts :clojure)
-                 :return (:return opts :data)
                  :throw-exceptions false
                  :method method
                  :url url}
         request (merge request (:http-options opts))
-        request (if (= (:return-format opts) :byte-array)
-                  (assoc request :as :byte-array)
-                  request)
-        opts (dissoc opts :access-token :target-format :return-format :return :http-options)
+        request (cond-> request
+                        (= (:return-format opts) :byte-array)
+                        (assoc :as :byte-array))
+        debug? (:debug? opts)
+        opts (dissoc opts
+                     :access-token
+                     :target-format
+                     :return-format
+                     :debug?
+                     :http-options)
         request (-> request
                     (cond-> (seq opts) (assoc :query-params opts))
                     (cond-> (seq data) (assoc :body data)))
@@ -94,12 +92,9 @@
          (:meta envelope) (throw (ex (get-in envelope [:meta :error-message])))
          (:error envelope) (throw (ex (:error envelope)))
          :else (throw (ex "Unknown error"))))
-      (condp = (:return request)
-        :data (if (= :json (:return-format request))
-                (json/encode (:data envelope) {:key-fn util/encode-key})
-                (:data envelope))
-        :envelope envelope
-        :response response))))
+      (if debug?
+        (with-meta envelope response)
+        envelope))))
 
 (defn api-request
   ([method path opts]
