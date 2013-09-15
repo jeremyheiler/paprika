@@ -25,18 +25,18 @@
             (is (= :post method))
             (is (= auth/access-token-uri url))
             (is (= {:grant-type "client_credentials"} data))
-            (is (= {:target-format :url-encoded} opts)))
+            (is (= {:return :envelope, :target-format :url-encoded} opts)))
         g (fn [method url data opts]
             (is (= :post method))
             (is (= auth/access-token-uri url))
             (is (= {:grant-type "client_credentials" :code "foo"} data))
-            (is (= {:target-format :url-encoded} opts))
+            (is (= {:return :envelope, :target-format :url-encoded} opts))
             (is (not (contains? data :force-permissions?))))
         h (fn [method url data opts]
             (is (= :post method))
             (is (= auth/access-token-uri url))
             (is (= {:grant-type "client_credentials"} data))
-            (is (= {:target-format :url-encoded} opts)))]
+            (is (= {:return :envelope, :target-format :url-encoded} opts)))]
     (binding [http/request f]
       (auth/request-app-token {}))
     (binding [http/request g]
@@ -49,19 +49,19 @@
             (is (= :post method))
             (is (= auth/access-token-uri url))
             (is (= {:grant-type "authorization_code"} data))
-            (is (= {:target-format :url-encoded} opts))
+            (is (= {:return :envelope, :target-format :url-encoded} opts))
             (is (not (contains? data :force-permissions?))))
         g (fn [method url data opts]
             (is (= :post method))
             (is (= auth/authorize-uri url))
             (is (= {:grant-type "authorization_code" :code "foo"} data))
-            (is (= {:target-format :url-encoded} opts))
+            (is (= {:return :envelope, :target-format :url-encoded} opts))
             (is (not (contains? data :force-permissions?))))
         h (fn [method url data opts]
             (is (= :post method))
             (is (= auth/access-token-uri url))
             (is (= {:grant-type "authorization_code"} data))
-            (is (= {:target-format :url-encoded} opts))
+            (is (= {:return :envelope, :target-format :url-encoded} opts))
             (is (not (contains? data :force-permissions?))))]
     (binding [http/request f]
       (auth/request-server-token {}))
