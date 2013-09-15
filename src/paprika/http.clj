@@ -93,7 +93,7 @@
          (:error envelope) (throw (ex (:error envelope)))
          :else (throw (ex "Unknown error"))))
       (if debug?
-        (with-meta envelope response)
+        (with-meta envelope {:response response})
         envelope))))
 
 (defn api-request
