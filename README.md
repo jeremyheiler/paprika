@@ -7,7 +7,7 @@ A Clojure library for the [App.net API](http://developers.app.net).
 Paprika is available on [Clojars](https://clojars.org/com.literallysoftware/paprika). Add the following dependency to your `project.clj` in order to use it.
 
 ```clojure
-[com.literallysoftware/paprika "0.0.3"]
+[com.literallysoftware/paprika "0.0.4"]
 ```
 
 ### Getting Started
