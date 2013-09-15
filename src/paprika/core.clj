@@ -45,10 +45,10 @@
       included along with the :text field.
   "
   (:require [clojure.string :as string]
-            [cheshire.core  :as json]
-            [pantomime.mime :refer [mime-type-of]]
-            [paprika.util   :as util]
-            [paprika.http   :as http]))
+            [cheshire.core :as json]
+            [pantomime.mime :as mime]
+            [paprika.util :as util]
+            [paprika.http :as http]))
 
 (defn- join-ids [user-ids]
   (string/join "," user-ids))
@@ -403,6 +403,6 @@
    (let [content (if (string? content) (utf8-bytes content) content)]
      (do-upload-file
        {:name filename
-        :mime-type (or (:mime-type opts) (mime-type-of content))
+        :mime-type (or (:mime-type opts) (mime/mime-type-of content))
         :content content}
        opts))))
