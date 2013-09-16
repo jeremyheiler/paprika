@@ -32,8 +32,7 @@
                     request)
           response (client request)
           content-type (get-in response [:headers "content-type"])
-          return-format (:return-format request)
-          return (:return request)]
+          return-format (:return-format request)]
       (if (and (= content-type "application/json") (= :clojure return-format))
         (update-in response [:body] json/decode util/decode-key)
         response))))
@@ -65,7 +64,7 @@
   [method url data opts]
   (let [request {:oauth-token (or (:token opts) (:access-token opts))
                  :target-format (:target-format opts :json)
-;;                 :accept-format (:accept-format opts :clojure)
+;                 :accept-format (:accept-format opts :clojure)
                  :return-format (:return-format opts :clojure)
                  :throw-exceptions false
                  :method method
