@@ -63,7 +63,7 @@
     :debug? - If true, attache the HTTP response to the envelope as metadata
   "
   [method url data opts]
-  (let [request {:oauth-token (:access-token opts)
+  (let [request {:oauth-token (or (:token opts) (:access-token opts))
                  :target-format (:target-format opts :json)
 ;;                 :accept-format (:accept-format opts :clojure)
                  :return-format (:return-format opts :clojure)
@@ -77,6 +77,7 @@
         debug? (:debug? opts)
         opts (dissoc opts
                      :access-token
+                     :token
                      :target-format
                      :return-format
                      :debug?

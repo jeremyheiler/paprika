@@ -7,14 +7,14 @@
 
   Global Options:
 
-    :access-token
+    :token
 
-      This is the access token used to authenticate the request. This
-      value is put on the request as the Authorization header. Some
-      endpoints work without an access token.
+      This is the access or delegate token used to authenticate the
+      request. This value is put on the request as the Authorization
+      header. Some endpoints work without an access token.
 
   The opts parameter for any endpoint function is an optional map that contains
-  Authenticated requests require an :access-token key in the opts map.
+  Authenticated requests require an :token key in the opts map.
 
   Whenever a \"user-id\" is required, one of the following can be used:
     - The user's ID (as an integer or, preferably, as a string).

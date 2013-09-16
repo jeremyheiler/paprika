@@ -35,7 +35,7 @@ The next few sections will walk you through using a few of them to give an idea 
 In order to create a post, you need the text for the post and a token.
 
 ```clojure
-(adn/create-post {:text "I am posting this from my #clojure repl!"} {:access-token token})
+(adn/create-post {:text "I am posting this from my #clojure repl!"} {:token token})
 ```
 
 Each endpoint function follows a general input and output structure. For `create-post`, the first argument is a map that represents the HTTP body. All endpoints that require an HTTP body will accept a map like this a function argument. In this case, the only required value in the map is the text of the post.
@@ -45,7 +45,7 @@ The second argument is an options map. Every endpoint function accepts an option
 If you want to specify that the post is a reply to another post, you add the `:reply-to` key with the parent post ID as its value. This is provided with the text because it is part of the HTTP body.
 
 ```clojure
-(adn/create-post {:text "This is a reply!" :reply-to "POST_ID"} {:access-token token})
+(adn/create-post {:text "This is a reply!" :reply-to "POST_ID"} {:token token})
 ```
 
 The value returned from `create-post` is the Post object for the new post.
@@ -64,7 +64,7 @@ In order to lookup a user, you need to provide the user's ID or their username.
 The string "me" can be used along with a token to lookup the currently authenticated user.
 
 ```clojure
-(adn/lookup-user "me" {:access-token token})
+(adn/lookup-user "me" {:token token})
 ```
 
 The main difference between `lookup-user` and `create-post` is that the former does not have an HTTP body. Instead you need to identify the user, and this information is provided as the first argument. As shown with teh first examples, the options map is not required when there are no options.
