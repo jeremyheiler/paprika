@@ -39,3 +39,9 @@
 (defn decode
   [coll]
   (transform decode-key nil coll))
+
+(defn as-long
+  [x]
+  (if (= (type x) java.lang.String)
+    (Long/parseLong x)
+    (long x)))
